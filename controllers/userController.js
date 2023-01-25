@@ -44,3 +44,45 @@ module.exports.create = function (req, res) {
         }
     })
 }
+
+module.exports.createSession = function (req, res) {
+    
+    User.findOne({email : req.body.email}, function (err, user) {
+        if(err){
+            console.log(err);
+            return;
+        }
+
+        if (user) {
+            if (req.body.password != user.password) {
+                return res.redirect('back');
+            }
+            res.cookie('user_id', user.id);
+            return res.redirect('/user/profile');
+        } else {
+            return res.redirect('back');
+        }
+    })
+}
+
+module.exports.profile = function (req, res) {
+    if (req.cookies.user_id) {
+        User.findById(req.cookies.user_id, function (err, user) {
+            if(err){
+                console.log(err);
+                return;
+            }
+
+            if (user) {
+                res.render('user_profile', {
+                    title : "user profile", 
+                    user : user
+                })
+            } else {
+                return res.redirect('/user/sign-in');
+            }
+        })
+    } else {
+        return res.redirect('/user/sign-in');  
+    }
+}
